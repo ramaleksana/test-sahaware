@@ -1,0 +1,230 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "Test Sahaware",
+        "description": "Documentation",
+        "version": "1.0.0",
+        "contact": {
+            "name": "Rama Leksana",
+            "email": "ramaleksana@gmail.com"
+        }
+    },
+    "servers": [
+        {
+            "url": "http://localhost:4433/api",
+            "description": "Local development"
+        }
+    ],
+   "components": {
+       "schemas": {
+           "Login": {
+               "type": "object",
+               "required": ["email", "password"],
+               "properties": {
+                   "email":{
+                       "type": "string"                       
+                   },
+                   "password": {
+                       "type": "string"
+                   }
+               },
+               "example": {
+                   "email": "rama@gmail.com",
+                   "password": "password"
+               }
+           },
+           "Registrasi": {
+               "type": "object",
+               "required": ["name", "email", "password", "phone"],
+               "properties": {
+                   "name": {"type": "string"},
+                   "email": {"type": "string"},
+                   "password": {"type": "string"},
+                   "phone": {"type": "string"}
+                },
+                "example": {
+                   "name" : "Rama Leksana",
+                    "email" : "rama@gmail.com",
+                    "password" : "password",
+                    "phone" : "08771130099"
+               }
+           },
+           "Kategori Artikel": {
+               "type": "object",
+               "required": ["title"],
+               "properties": {
+                   "title": {"type": "string"}
+               },
+               "example": {
+                   "title": "Sport"
+               }
+           },
+           "Artikel": {
+               "type": "object",
+               "required": ["title", "short_description", "description", "category_id", "", "image"],
+               "properties": {
+                   "title": {"type": "string"},
+                   "short_description": {"type": "string"},
+                   "description": {"type": "string"},
+                   "category_id": {"type": "string"},
+                   "is_visible": {"type": "boolean"},
+                   "image": {"type": "string", "format": "binary"}
+               }
+           }
+       },
+       "securitySchemes": {
+           "bearerAuth": {
+               "type": "http",
+               "scheme": "bearer",
+               "bearerFormat": "JWT"
+           }
+       }
+    },
+    "tags": [
+        {"name": "Auth"},
+        {"name": "Kategori Artikel"},
+        {"name": "Artikel"}
+    ],
+    "paths": {
+        "/auth/login": {
+            "post": {
+                "summary": "Login user",
+                "tags": ["Auth"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Login"
+                            }
+                        }
+                    }
+                },
+                "responses": {                    
+                    "200": { "description": "Sukses Login" },
+                    "401": { "description": "User belum terdaftar atau kesalahan password" },
+                    "422": { "description": "Error validasi parameter"}                    
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "summary": "Registrasi user",
+                "tags": ["Auth"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Registrasi"
+                            }
+                        }
+                    }
+                },
+                "responses": {                    
+                    "201": { "description": "Sukses Registrasi" },
+                    "422": { "description": "Error validasi parameter"}
+                }
+            }
+        },
+        "/article-category": {
+            "get": {
+                "summary": "List data kategori artikel",
+                "tags": ["Kategori Artikel"],
+                "responses": {
+                    "200": {"description": "Sukses menampilkan data kategori"}
+                }
+            }
+        },
+        "/article-category/{id}": {
+            "get": {
+                "summary": "Menampilkan data kategori artikel berdasarkan id",
+                "tags": ["Kategori Artikel"],
+                "parameters": [{"in": "path", "name": "id", "required": true, "schema":{"type": "string"}, "allowReserved": true}],
+                "responses": {
+                    "200": {"description": "Sukses menampilkan data kategori berdasarkan id"},
+                    "404": {"description": "Gagal menampilkan data kategori berdasarkan id"}
+                }
+            }
+        },
+        "/article-category/create":{
+            "post": {
+                "summary": "Tambah Kategori Artikel",
+                "tags": ["Kategori Artikel"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Kategori Artikel"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {"description": "Sukses menambahkan kategori artikel"},
+                    "422": { "description": "Error validasi parameter"}
+                }
+            }
+        },
+        "/article?search={search}&size={size}&page={page}": {
+            "get": {
+                "summary": "List Artikel",
+                "tags": ["Artikel"],
+                "parameters": [{
+                    "in": "query",
+                    "name": "search",
+                    "allowReserved": true,
+                    "schema": {"type": "string"},
+                    "example": " "
+                },{
+                    "in": "query",
+                    "name": "size",
+                    "allowReserved": true,
+                    "schema": {"type": "number"},
+                    "example": 1
+                },{
+                    "in": "query",
+                    "name": "page",
+                    "allowReserved": true,
+                    "schema": {"type": "number"},
+                    "example": 1
+                }],
+                "responses": {
+                    "200": {"description": "Sukses menampilkan data artikel"}
+                }
+            }
+        },
+        "/article/create": {
+            "post": {
+                "summary": "Tambah Artikel",
+                "tags": ["Artikel"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {"type": "string"},
+                                    "short_description": {"type": "string"},
+                                    "description": {"type": "string"},
+                                    "category_id": {"type": "string"},
+                                    "is_visible": {"type": "boolean"},
+                                    "image": {"type": "string", "format": "binary"}
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {"description": "Sukses menambahkan artikel"},
+                    "400": { "description": "Error upload file / kategori artikel tidak ada"},
+                    "422": { "description": "Error validasi parameter"}
+                }
+            }
+        }
+    }
+}

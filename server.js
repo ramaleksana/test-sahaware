@@ -4,6 +4,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const swaggerUI = require("swagger-ui-express");
 const PORT = process.env.PORT
 
 app.use(cors());
@@ -11,12 +12,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const router = require("./app/config/routes");
+const docs = require("./swagger.json");
 
 app.use('/public/images', express.static('./uploads/'));
 
 app.get("/", (req, res) => res.send("hellow"));
 
 app.use('/api', router);
+app.use('/docs', swaggerUI.serve, swaggerUI.setup(docs))
 
 app.use((req, res, next) => {
     let err = new Error('URL Not Found!')
